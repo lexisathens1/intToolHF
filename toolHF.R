@@ -29,28 +29,32 @@ size.land=15
 # Debug use
 # input=list()
 # input$x='0.5,0.2'
+# input$x=''
 # input$y='0.5,0.1'
 # input$nhf=2
 # input$tipo='Population at risk'
-# input$opcao='Optimized'
+# input$opcao='User-defined'
 
 
 # Define UI 
 ui <- dashboardPage(
-  dashboardHeader(),
+  dashboardHeader(title = "Optimal Locations of Health Facilities (HF)",
+                  titleWidth = 400),
   dashboardSidebar(
     radioButtons(inputId = "tipo", 
-                 label = "Type:", 
+                 label = "Output variable:", 
                  choices = c("Population at risk", "Prevalence")),
     radioButtons(inputId = "opcao", 
-                 label = "Option:", 
+                 label = "Location of proposed HF:", 
                  choices = c("User-defined", "Optimized")),
     conditionalPanel(
       condition = "input.opcao == 'User-defined'",
       textInput("x", label="Y coordinates of proposed HF", 
-                value='3.75',placeholder='0-1'),
+                value='3.75',placeholder='0 - 15'),
       textInput("y", label="X coordinates of proposed HF", 
-                value='11.25',placeholder='0-1')
+                value='11.25',placeholder='0 - 15'),
+      div("Use comma to specify more than one coordinates: e.g. 3.75, 5.25", 
+          class="form-group shiny-input-container")
     ),
     conditionalPanel(
       condition = "input.opcao == 'Optimized'",
@@ -59,11 +63,22 @@ ui <- dashboardPage(
                    choices = c("1", "2","3"))
     )
   ),
+  
   dashboardBody(
-    h1("Determining the optimal spatial distribution of health facilities (HF)"),
+    # h1("Determining the optimal spatial distribution of health facilities (HF)"),
+    p("Some explanations and disclaimers go here..."),
     fluidRow(
       column(
         width = 8,
+        fluidRow(
+          infoBox("Total population at risk (Original)", 
+                  width = 6,
+                  icon = icon("exclamation"),
+                  value = round(s.incid.base),
+                  subtitle = "Before proposed HF"),
+          infoBoxOutput("riskReduce", width = 6)
+        ),
+        
         box(
           title = "Effect of proposed HF",
           width = NULL,
@@ -74,11 +89,14 @@ ui <- dashboardPage(
       ),
       column(
         width = 4,
-        box(title = "Distance to HF", width = NULL, plotOutput("distPlot"),
+        box(title = "Distance to nearest HF", width = NULL, 
+            plotOutput("distPlot", height = "200px"),
             collapsible = T, solidHeader = T),
-        box(title = "Distance to urban center", width = NULL, plotOutput("distucPlot"),
+        box(title = "Distance to nearest urban center", width = NULL, 
+            plotOutput("distucPlot", height = "200px"),
             collapsible = T, solidHeader = T),
-        box(title = "Population density", width = NULL, plotOutput("popPlot"),
+        box(title = "Population density", width = NULL, 
+            plotOutput("popPlot", height = "200px"),
             collapsible = T, solidHeader = T)
       )
     )
@@ -107,6 +125,7 @@ server <- function(input, output) {
       grid.user$zzz=grid.user[,var1]
       # prop.reduction=round(100*sum(grid.user$incid)/s.incid.base,0)
       hf.user=hf
+      hf.user$type="HFExist"
       
       # Check if there are new coordinates and equal no. of x and y
       # Then update incid and prev
@@ -131,10 +150,13 @@ server <- function(input, output) {
     # Make table of point of interests
     poi=rbind(hf.user,pop)
     poi$type=factor(poi$type, levels = c("HFExist", "HFNew", "PopCen"))
-    prop.reduction=round(100*sum(grid.user$incid)/s.incid.base,0)
-    label1=paste("Proportion original cases = ", prop.reduction, '%', sep='')
-    label2=paste(100-prop.reduction, '% of cases reduced', sep='')
-    label=paste(label1, ', ', label2, sep = '')
+    
+    # Calculate risk reduction
+    s.incid.user=sum(grid.user$incid)
+    # meanrop.reduction=round(100*sum(grid.user$incid)/s.incid.base,0)
+    # label1=paste("Proportion original cases = ", prop.reduction, '%', sep='')
+    # label2=paste(100-prop.reduction, '% of cases reduced', sep='')
+    # label=paste(label1, ', ', label2, sep = '')
     
     # Basic frameworks for output plot
     res <- ggplot() + 
@@ -148,11 +170,10 @@ server <- function(input, output) {
       scale_fill_gradient2(low="cyan", mid="red", high='purple',
                            limits=c(0,max1), midpoint=max1/2, name=nome) + 
       geom_point(data=poi, aes(x=x, y=y, shape=type), size=5) +
-      scale_shape_manual(name="Point of Interest", 
+      scale_shape_manual(name="Points of Interest", 
                          breaks=c("HFExist", "HFNew", "PopCen"),
                          labels=c("Existing HF", "Proposed HF", "Population Center"),
-                         values=c(17, 2, 10), drop=F) +
-      ggtitle(label)
+                         values=c(17, 2, 10), drop=F)
     
     # Sub plots template
     res1=res + 
@@ -177,13 +198,33 @@ server <- function(input, output) {
       geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F)
     
     L <- list(plot.main=plot.main, plot.distuc=plot.distuc, 
-              plot.pop=plot.pop, plot.dist=plot.dist)
+              plot.pop=plot.pop, plot.dist=plot.dist,
+              s.incid.user=s.incid.user)
   })
   
   output$malariaPlot <- renderPlot(out.plot()$plot.main)
   output$distucPlot <- renderPlot(out.plot()$plot.distuc)
   output$popPlot <- renderPlot(out.plot()$plot.pop)
   output$distPlot <- renderPlot(out.plot()$plot.dist)
+  output$riskReduce <- renderInfoBox({
+    s.incid.user=out.plot()$s.incid.user
+    prop.reduce=100*(s.incid.user-s.incid.base)/s.incid.base
+    prop.reduce=round(prop.reduce)
+    if (prop.reduce < 0) {
+      icon <- icon("arrow-down")
+      out.value <- paste(round(s.incid.user), " (", prop.reduce, "%)", sep="")
+    } else {
+      icon <- icon("arrows-h")
+      out.value <- paste(round(s.incid.user), " (Unchanged)", sep="")
+    }
+    infoBox(
+      title = "Expected population at risk",
+      value = out.value,
+      subtitle = "After proposed HF",
+      icon = icon,
+      width = 4
+    )
+  })
 }
 
 # Run the application 
