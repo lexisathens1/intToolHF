@@ -53,7 +53,7 @@ ui <- dashboardPage(
                 value='3.75',placeholder='0 - 15'),
       textInput("y", label="X coordinates of proposed HF", 
                 value='11.25',placeholder='0 - 15'),
-      div("Use comma to specify more than one coordinates: e.g. 3.75, 5.25", 
+      div("Use commas to specify more than one coordinate (e.g. 3.75, 5.25)", 
           class="form-group shiny-input-container")
     ),
     conditionalPanel(
@@ -70,22 +70,8 @@ ui <- dashboardPage(
     fluidRow(
       column(
         width = 8,
-        fluidRow(
-          infoBox("Total population at risk (Original)", 
-                  width = 6,
-                  icon = icon("exclamation"),
-                  value = round(s.incid.base),
-                  subtitle = "Before proposed HF"),
-          infoBoxOutput("riskReduce", width = 6)
-        ),
-        
-        box(
-          title = "Effect of proposed HF",
-          width = NULL,
-          status = "primary",
-          solidHeader = T,
-          plotOutput("malariaPlot", height = "600px")
-        )
+        infoBoxOutput("riskReduce", width = NULL),
+        uiOutput("primaryBox")
       ),
       column(
         width = 4,
@@ -203,27 +189,44 @@ server <- function(input, output) {
   })
   
   output$malariaPlot <- renderPlot(out.plot()$plot.main)
+  
   output$distucPlot <- renderPlot(out.plot()$plot.distuc)
+  
   output$popPlot <- renderPlot(out.plot()$plot.pop)
+  
   output$distPlot <- renderPlot(out.plot()$plot.dist)
+  
   output$riskReduce <- renderInfoBox({
     s.incid.user=out.plot()$s.incid.user
     prop.reduce=100*(s.incid.user-s.incid.base)/s.incid.base
     prop.reduce=round(prop.reduce)
     if (prop.reduce < 0) {
       icon <- icon("arrow-down")
-      out.value <- paste(round(s.incid.user), " (", prop.reduce, "%)", sep="")
+      out.value <- paste("Before: ", round(s.incid.base), sep="")
+      out.value <- paste(out.value, HTML('&emsp;&emsp;'), "After: ", 
+                         round(s.incid.user), " (", prop.reduce, "%)", sep="")
+      out.value <- HTML(out.value)
     } else {
       icon <- icon("arrows-h")
-      out.value <- paste(round(s.incid.user), " (Unchanged)", sep="")
+      out.value <- paste("Before: ", round(s.incid.base), sep="")
+      out.value <- paste(out.value, HTML('&emsp;&emsp;'), "After: ", 
+                         round(s.incid.user), " (Unchanged)", sep="")
+      out.value <- HTML(out.value)
     }
     infoBox(
-      title = "Expected population at risk",
+      title = "Changes in population at risk",
       value = out.value,
-      subtitle = "After proposed HF",
-      icon = icon,
-      width = 4
+      subtitle = "Before vs. after proposed HF",
+      icon = icon
     )
+  })
+  
+  output$primaryBox <- renderUI({
+    box(title = paste("Predicted", input$tipo),
+        width = NULL,
+        status = "primary",
+        solidHeader = T,
+        plotOutput("malariaPlot", height = "600px"))
   })
 }
 
