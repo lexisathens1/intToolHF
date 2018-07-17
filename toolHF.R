@@ -49,9 +49,9 @@ ui <- dashboardPage(
                  choices = c("User-defined", "Optimized")),
     conditionalPanel(
       condition = "input.opcao == 'User-defined'",
-      textInput("x", label="Y coordinates of proposed HF", 
+      textInput("x", label="X coordinates of proposed HF", 
                 value='3.75',placeholder='0 - 15'),
-      textInput("y", label="X coordinates of proposed HF", 
+      textInput("y", label="Y coordinates of proposed HF", 
                 value='11.25',placeholder='0 - 15'),
       div("Use commas to specify more than one coordinate (e.g. 3.75, 5.25)", 
           class="form-group shiny-input-container")
@@ -202,21 +202,23 @@ server <- function(input, output) {
     prop.reduce=round(prop.reduce)
     if (prop.reduce < 0) {
       icon <- icon("arrow-down")
-      out.value <- paste("Before: ", round(s.incid.base), sep="")
-      out.value <- paste(out.value, HTML('&emsp;&emsp;'), "After: ", 
-                         round(s.incid.user), " (", prop.reduce, "%)", sep="")
+      out.value <- paste("Prior to new HF: ", round(s.incid.base), HTML('<br>'), 
+                         sep="")
+      out.value <- paste(out.value, "After new HF: ", round(s.incid.user), 
+                         " (", prop.reduce, "%)", sep="")
       out.value <- HTML(out.value)
     } else {
       icon <- icon("arrows-h")
-      out.value <- paste("Before: ", round(s.incid.base), sep="")
-      out.value <- paste(out.value, HTML('&emsp;&emsp;'), "After: ", 
-                         round(s.incid.user), " (Unchanged)", sep="")
+      out.value <- paste("Prior to new HF: ", round(s.incid.base), HTML('<br>'), 
+                         sep="")
+      out.value <- paste(out.value, "After new HF: ", round(s.incid.user), 
+                         " (Unchanged)", sep="")
       out.value <- HTML(out.value)
     }
     infoBox(
-      title = "Changes in population at risk",
+      title = "Total Population at risk",
       value = out.value,
-      subtitle = "Before vs. after proposed HF",
+      # subtitle = "Before vs. after proposed HF",
       icon = icon
     )
   })
