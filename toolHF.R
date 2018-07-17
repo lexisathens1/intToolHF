@@ -164,7 +164,7 @@ server <- function(input, output) {
       geom_point(data=poi, aes(x=x, y=y, shape=type), size=5) +
       scale_shape_manual(name="Points of Interest", 
                          breaks=c("HFExist", "HFNew", "PopCen"),
-                         labels=c("Existing HF", "Proposed HF", "Population Center"),
+                         labels=c("Existing HF", "Proposed HF", "Urban Center"),
                          values=c(17, 2, 10), drop=F)
     
     # Sub plots template
