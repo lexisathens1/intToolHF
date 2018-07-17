@@ -65,8 +65,19 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-    # h1("Determining the optimal spatial distribution of health facilities (HF)"),
-    p("Some explanations and disclaimers go here..."),
+    p("This app is designed to demonstrate how the malaria risk factor analysis can
+      be used to help determine the location of new health facilities (HF). Although
+      there are several risk factors, we simplify the model to include only two 
+      important distance based factors: the distance to nearest HF and to nearest 
+      urban center. Here, users can explore how the placement of new HF(s) on a 
+      hypothetical landscape can change the malaria prevalence and population at 
+      risk based on the outcome of the statistical model and the population
+      distribution."),
+    p("The data used to estimate the model parameters is based on surveys conducted
+      in northern Ghana between 2010 and 2013. Therefore, the relationship between 
+      malaria prevalence and the predictors depicted here may not be applicable in 
+      other localities. We also assume that their relationships are unchanged after 
+      the addition of new HF."),
     fluidRow(
       column(
         width = 8,
@@ -109,7 +120,6 @@ server <- function(input, output) {
       grid.user=get.incid.preval(coef2, grid1, x.hf.new=0.25*size.land, 
                                  y.hf.new=0.75*size.land, stats)
       grid.user$zzz=grid.user[,var1]
-      # prop.reduction=round(100*sum(grid.user$incid)/s.incid.base,0)
       hf.user=hf
       hf.user$type="HFExist"
       
@@ -139,10 +149,6 @@ server <- function(input, output) {
     
     # Calculate risk reduction
     s.incid.user=sum(grid.user$incid)
-    # meanrop.reduction=round(100*sum(grid.user$incid)/s.incid.base,0)
-    # label1=paste("Proportion original cases = ", prop.reduction, '%', sep='')
-    # label2=paste(100-prop.reduction, '% of cases reduced', sep='')
-    # label=paste(label1, ', ', label2, sep = '')
     
     # Basic frameworks for output plot
     res <- ggplot() + 
@@ -218,7 +224,6 @@ server <- function(input, output) {
     infoBox(
       title = "Total Population at risk",
       value = out.value,
-      # subtitle = "Before vs. after proposed HF",
       icon = icon
     )
   })
