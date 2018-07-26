@@ -65,19 +65,18 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-    p("This app is designed to demonstrate how the malaria risk factor analysis can
-      be used to help determine the location of new health facilities (HF). Although
-      there are several risk factors, we simplify the model to include only two 
-      important distance based factors: the distance to nearest HF and to nearest 
-      urban center. Here, users can explore how the placement of new HF(s) on a 
-      hypothetical landscape can change the malaria prevalence and population at 
-      risk based on the outcome of the statistical model and the population
-      distribution."),
-    p("The data used to estimate the model parameters is based on surveys conducted
-      in northern Ghana between 2010 and 2013. Therefore, the relationship between 
-      malaria prevalence and the predictors depicted here may not be applicable in 
-      other localities. We also assume that their relationships are unchanged after 
-      the addition of new HF."),
+    p("This app is designed to demonstrate how the malaria risk factor analysis can be
+      used to help determine the location of new health facilities (HF’s). More
+      specifically, users can explore how the placement of new HF‘s on a hypothetical
+      landscape can change malaria prevalence and population at risk."),
+    p("Disclaimer: While there are several important malaria risk factors, our statistical
+      model only includes two distance-based factors: the distance to nearest HF and
+      distance to the nearest urban center. The data used to estimate model parameters
+      is based on surveys conducted in northern Ghana between 2010 and 2013. Therefore,
+      the relationship between malaria prevalence and the predictors depicted here may
+      not be applicable in other localities and other years. Finally, we assume that
+      there is a causal relationship between malaria risk and these distance variables
+      and that the estimated relationships do not change after the addition of new HF’s."),
     fluidRow(
       column(
         width = 8,
