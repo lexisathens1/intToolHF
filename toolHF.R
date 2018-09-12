@@ -168,25 +168,37 @@ server <- function(input, output) {
     
     # Sub plots template
     res1=res + 
-      scale_fill_gradient(low='#ffffff', high='#ff0000', name='') +
       scale_shape_manual(name="Point of Interest", 
                          breaks=c("HFExist", "HFNew", "PopCen"),
                          labels=c("Existing HF", "Proposed HF", "Population Center"),
                          values=c(17, 2, 10), drop=F)
-    # Wealth plot
+    
+    # Distance to UC plot
+    max.distuc <- ceiling(max(grid1[,'dist_uc']))
     plot.distuc=res1 + 
       geom_tile(data=grid.user, alpha=0.8, aes(x=x, y=y, fill=dist_uc)) +
-      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F)
+      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F) +
+      scale_fill_gradient2(low='darkgreen', mid='green', high='white', 
+                           limits=c(0, max.distuc), midpoint=max.distuc/2,
+                           name='')
     
     # Pop plot
+    max.pop <- ceiling(max(grid1[,'pop']))
     plot.pop=res1 + 
       geom_tile(data=grid.user, alpha=0.8, aes(x=x, y=y, fill=pop)) +
-      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F)
+      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F) +
+      scale_fill_gradient2(low='white', mid = 'orange', high='red', 
+                           limits=c(0, max.pop), midpoint=max.pop/2,
+                           name='')
     
     # Dist plot
+    max.dist_hf <- ceiling(max(grid1[,'dist_hf']))
     plot.dist=res1 + 
       geom_tile(data=grid.user, alpha=0.8, aes(x=x, y=y, fill=dist1)) +
-      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F)
+      geom_point(data=poi, aes(x=x, y=y, shape=type), size=4, show.legend=F) +
+      scale_fill_gradient2(low='blue', mid = 'cyan', high='white', 
+                           limits=c(0, max.dist_hf), midpoint=max.dist_hf/2,
+                           name='')
     
     L <- list(plot.main=plot.main, plot.distuc=plot.distuc, 
               plot.pop=plot.pop, plot.dist=plot.dist,
